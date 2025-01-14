@@ -5,3 +5,11 @@
 .app-container {
   @apply container mx-auto px-4;
 }
+
+input {
+  @apply border px-2 py-1 rounded w-full placeholder:font-light;
+}
+
+.app-button {
+  @apply text-sm px-2 py-1 rounded;
+}
