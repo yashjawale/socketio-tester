@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ChangeEvent } from 'react'
+import { useState, useEffect, ChangeEvent } from 'react'
 import { io, Socket } from 'socket.io-client'
 
 type Parameter = string | number | boolean | Record<string, any>
@@ -10,7 +10,8 @@ const App = () => {
   const [eventName, setEventName] = useState<string>('')
   const [parameters, setParameters] = useState<Parameter[]>([''])
   const [socket, setSocket] = useState<Socket | null>(null)
-  const [connectionStatus, setConnectionStatus] =useState<string>('Disconnected')
+  const [connectionStatus, setConnectionStatus] =
+    useState<string>('Disconnected')
   const [socketId, setSocketId] = useState<string | null>(null)
   const [output, setOutput] = useState<string[]>([])
 
@@ -25,6 +26,19 @@ const App = () => {
       socket.disconnect()
     }
     const newSocket = io(serverUrl)
+
+    newSocket.on('connect_error', (error) => {
+      setConnectionStatus('Error')
+      setSocketId(null)
+      setOutput((prev) => [...prev, `${error}`])
+    })
+
+    newSocket.on('error', (error) => {
+      setConnectionStatus('Error')
+      setSocketId(null)
+      setOutput((prev) => [...prev, `Error: ${error}`])
+    })
+
     newSocket.on('connect', () => {
       setConnectionStatus('Connected')
       setSocketId(newSocket.id || null)
@@ -99,18 +113,66 @@ const App = () => {
         <div className="flex justify-between pt-6">
           <h1 className="text-4xl font-semibold">Socket.IO Tester</h1>
           <div>
-            <p className="px-2 py-1 border border-green-600 text-green-600 text-xs rounded-full w-fit ml-auto">
-              Connected
+            <p
+              className={`px-2 py-1 border ${
+                connectionStatus === 'Connected'
+                  ? 'border-green-600'
+                  : 'border-red-600'
+              } ${
+                connectionStatus === 'Connected'
+                  ? 'text-green-600'
+                  : 'text-red-600'
+              } text-xs rounded-full w-fit ml-auto`}
+            >
+              {connectionStatus}
             </p>
-            <p className="text-xs font-light mt-1">Socket ID: 98f9432f2f2d22</p>
+            {connectionStatus === 'Connected' && (
+              <p className="text-xs font-light mt-1">Socket ID: {socketId}</p>
+            )}
           </div>
         </div>
         <div>
           <h2 className="text-lg">Server URL</h2>
           <div className="flex justify-between gap-2">
-            <input placeholder="http://localhost:3000" className="font-mono" />
-            <button className="app-button bg-green-700 text-white">
-              Connect
+            <input
+              placeholder="http://localhost:3000"
+              value={serverUrl}
+              onChange={(e) => setServerUrl(e.target.value)}
+              className="font-mono"
+            />
+            {connectionStatus === 'Connected' ? (
+              <button
+                onClick={disconnectFromServer}
+                className="app-button bg-red-700 text-white"
+              >
+                Disconnect
+              </button>
+            ) : (
+              <button
+                onClick={connectToServer}
+                className="app-button bg-green-700 text-white"
+                disabled={!serverUrl}
+              >
+                Connect
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div>
+        <h2 className="text-lg">Emit Event</h2>
+          <div className="flex justify-between gap-2">
+            <input
+              placeholder="event-name"
+              className="font-mono"
+              value={eventName}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setEventName(e.target.value)
+              }
+            />
+            <button className="app-button bg-sky-600 text-white min-w-16" onClick={emitEvent}
+            disabled={!eventName}>
+              Emit
             </button>
           </div>
         </div>
@@ -122,25 +184,23 @@ const App = () => {
             automatically
           </p>
           <div className="my-4">
-            <div className="flex gap-2 justify-between mb-3">
-              <input placeholder="Parameter 1" />
-              <button className="app-button text-slate-600 border border-slate-600">
+            {parameters.map((param, index) => (
+              <div key={index} className="flex gap-2 justify-between mb-3">
+              <input placeholder={`Parameter ${index + 1}`} value={
+                    typeof param === 'string' ? param : JSON.stringify(param)
+                  }
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    updateParameter(index, e.target.value)
+                  } />
+              <button onClick={() => deleteParameter(index)} className="app-button text-slate-600 border border-slate-600">
                 Remove
               </button>
             </div>
-            <div className="flex gap-2 justify-between mb-3">
-              <input placeholder="Parameter 1" />
-              <button className="app-button text-slate-600 border border-slate-600">
-                Remove
-              </button>
-            </div>
-            <button className="app-button border border-slate-700 text-slate-700 hover:bg-slate-100">
+            ))}
+            <button onClick={addParameter} className="app-button border border-slate-700 text-slate-700 hover:bg-slate-100">
               Add Parameter +
             </button>
           </div>
-          <button className="app-button bg-sky-600 text-white w-28 h-9 mt-4">
-            Emit Event
-          </button>
         </div>
 
         <div className="opacity-70 pt-6 text-xs">
@@ -162,48 +222,15 @@ const App = () => {
           <button className="app-button bg-red-600">Clear</button>
         </div>
         <div className="h-full max-h-svh overflow-y-scroll p-4 bg-slate-900 text-slate-200 font-mono text-sm [&>*]:border-b-[0.5px] [&>*]:border-slate-500 [&>*]:pb-2 [&>*]:mb-2">
-          <p>Lorem ipsum dolor sit amet.</p>
-          <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit.</p>
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente,
-            officiis! Cupiditate qui quo temporibus, cumque voluptas voluptatum
-            non provident laudantium.
-          </p>
-          <p>Lorem ipsum dolor sit amet.</p>
-          <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit.</p>
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente,
-            officiis! Cupiditate qui quo temporibus, cumque voluptas voluptatum
-            non provident laudantium.
-          </p>
-          <p>Lorem ipsum dolor sit amet.</p>
-          <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit.</p>
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente,
-            officiis! Cupiditate qui quo temporibus, cumque voluptas voluptatum
-            non provident laudantium.
-          </p>
-          <p>Lorem ipsum dolor sit amet.</p>
-          <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit.</p>
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente,
-            officiis! Cupiditate qui quo temporibus, cumque voluptas voluptatum
-            non provident laudantium.
-          </p>
-          <p>Lorem ipsum dolor sit amet.</p>
-          <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit.</p>
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente,
-            officiis! Cupiditate qui quo temporibus, cumque voluptas voluptatum
-            non provident laudantium.
-          </p>
-          <p>Lorem ipsum dolor sit amet.</p>
-          <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit.</p>
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sapiente,
-            officiis! Cupiditate qui quo temporibus, cumque voluptas voluptatum
-            non provident laudantium.
-          </p>
+        {output.length === 0 ? (
+            <p>No logs yet.</p>
+          ) : (
+            output.map((log, index) => (
+              <p key={index}>
+                {log}
+              </p>
+            ))
+          )}
         </div>
       </div>
     </div>
