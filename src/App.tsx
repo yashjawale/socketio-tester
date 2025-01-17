@@ -1,7 +1,21 @@
-import { useState, useEffect, ChangeEvent } from 'react'
+import dayjs from 'dayjs'
+import { useState, useEffect, ChangeEvent, useRef } from 'react'
 import { io, Socket } from 'socket.io-client'
 
 type Parameter = string | number | boolean | Record<string, any>
+
+type OutputLog = {
+  message: string
+  timestamp: number
+  type: 'event-emit' | 'error' | 'callback' | 'message'
+}
+
+const logTypeClasses = {
+  'event-emit': 'text-sky-300',
+  error: 'text-red-300',
+  callback: 'text-blue-300',
+  message: 'text-white',
+};
 
 const App = () => {
   const [serverUrl, setServerUrl] = useState<string>(
@@ -13,7 +27,9 @@ const App = () => {
   const [connectionStatus, setConnectionStatus] =
     useState<string>('Disconnected')
   const [socketId, setSocketId] = useState<string | null>(null)
-  const [output, setOutput] = useState<string[]>([])
+  const [output, setOutput] = useState<OutputLog[]>([])
+
+  const outputListRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (serverUrl) {
@@ -30,13 +46,15 @@ const App = () => {
     newSocket.on('connect_error', (error) => {
       setConnectionStatus('Error')
       setSocketId(null)
-      setOutput((prev) => [...prev, `${error}`])
+      // setOutput((prev) => [...prev, `${error}`])
+      setOutput((prev) => [...prev, { message: error.message, timestamp: Date.now(), type: 'error' }])
     })
 
     newSocket.on('error', (error) => {
       setConnectionStatus('Error')
       setSocketId(null)
-      setOutput((prev) => [...prev, `Error: ${error}`])
+      // setOutput((prev) => [...prev, `Error: ${error}`])
+      setOutput((prev) => [...prev, { message: error.message, timestamp: Date.now(), type: 'error' }])
     })
 
     newSocket.on('connect', () => {
@@ -51,7 +69,8 @@ const App = () => {
       const newOutput = `Received event "${event}" with args: ${JSON.stringify(
         args
       )}`
-      setOutput((prev) => [...prev, newOutput])
+      // setOutput((prev) => [...prev, newOutput])
+      setOutput((prev) => [...prev, { message: newOutput, timestamp: Date.now(), type: 'event-emit' }])
     })
     setSocket(newSocket)
   }
@@ -67,18 +86,21 @@ const App = () => {
 
   const emitEvent = () => {
     if (!socket) {
-      setOutput((prev) => [...prev, 'Error: Not connected to a server.'])
+      // setOutput((prev) => [...prev, 'Error: Not connected to a server.'])
+      setOutput((prev) => [...prev, { message: 'Error: Not connected to a server.', timestamp: Date.now(), type: 'error' }])
       return
     }
     if (eventName.trim() === '') {
-      setOutput((prev) => [...prev, 'Error: Event name cannot be empty.'])
+      // setOutput((prev) => [...prev, 'Error: Event name cannot be empty.'])
+      setOutput((prev) => [...prev, { message: 'Error: Event name cannot be empty.', timestamp: Date.now(), type: 'error' }])
       return
     }
     socket.emit(eventName, ...parameters)
     const log = `Emitted event "${eventName}" with parameters: ${JSON.stringify(
       parameters
     )}`
-    setOutput((prev) => [...prev, log])
+    // setOutput((prev) => [...prev, log])
+    setOutput((prev) => [...prev, { message: log, timestamp: Date.now(), type: 'message' }])
   }
 
   const addParameter = () => setParameters([...parameters, ''])
@@ -107,9 +129,24 @@ const App = () => {
     setParameters(parameters.filter((_, i) => i !== index))
   }
 
+  const clearLogs = () => {
+    setOutput([])
+  }
+
+  // Bring last output log into view
+  useEffect(() => {
+    if (outputListRef.current) {
+      // outputListRef.current.scrollTop = outputListRef.current.scrollHeight;
+      outputListRef.current.scrollTo({
+        top: outputListRef.current.scrollHeight,
+        behavior: 'smooth',
+      })
+    }
+  }, [output])
+
   return (
-    <div className="h-screen grid md:grid-cols-2 gap-3 p-3">
-      <div className="space-y-6 p-5 overflow-y-scroll">
+    <div className="h-screen flex flex-col md:flex-row gap-3 p-3">
+      <div className="space-y-6 p-5 overflow-y-scroll flex-1">
         <div className="flex justify-between pt-6">
           <h1 className="text-4xl font-semibold">Socket.IO Tester</h1>
           <div>
@@ -217,19 +254,22 @@ const App = () => {
           </a>
         </div>
       </div>
-      <div className="rounded-xl overflow-hidden">
+      <div className="rounded-xl flex-1 flex flex-col">
         <div className="flex justify-between bg-slate-700 text-white p-4">
           <h2>Logs</h2>
-          <button className="app-button bg-red-600">Clear</button>
+          <button className="app-button bg-red-600" onClick={clearLogs}>Clear</button>
         </div>
-        <div className="h-full max-h-svh overflow-y-scroll p-4 bg-slate-900 text-slate-200 font-mono text-sm [&>*]:border-b-[0.5px] [&>*]:border-slate-500 [&>*]:pb-2 [&>*]:mb-2">
+        <div ref={outputListRef} className="overflow-y-scroll flex-1 p-4 bg-slate-900 text-slate-200 font-mono text-sm [&>*]:border-b-[0.5px] [&>*]:border-slate-500 [&>*]:pb-2 [&>*]:mb-2">
         {output.length === 0 ? (
             <p>No logs yet.</p>
           ) : (
             output.map((log, index) => (
-              <p key={index}>
-                {log}
-              </p>
+              <div key={index}>
+                <p className='opacity-70 text-xs'>{dayjs(log.timestamp).format('YYYY-MM-DD HH:mm:ss')}</p>
+                <p className={logTypeClasses[log.type] || 'text-white'}>
+                {log.message || 'No message'}
+                </p>
+              </div>
             ))
           )}
         </div>
