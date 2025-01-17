@@ -108,7 +108,7 @@ const App = () => {
   }
 
   return (
-    <div className="h-screen grid grid-cols-2 gap-3 p-3">
+    <div className="h-screen grid md:grid-cols-2 gap-3 p-3">
       <div className="space-y-6 p-5 overflow-y-scroll">
         <div className="flex justify-between pt-6">
           <h1 className="text-4xl font-semibold">Socket.IO Tester</h1>
@@ -131,6 +131,7 @@ const App = () => {
             )}
           </div>
         </div>
+        <span className='uppercase font-light text-[9px] px-[4px] py-[2px] border rounded border-black'>Beta</span>
         <div>
           <h2 className="text-lg">Server URL</h2>
           <div className="flex justify-between gap-2">
