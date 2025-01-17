@@ -15,7 +15,7 @@ const logTypeClasses = {
   error: 'text-red-300',
   callback: 'text-blue-300',
   message: 'text-white',
-};
+}
 
 const App = () => {
   const [serverUrl, setServerUrl] = useState<string>(
@@ -28,6 +28,7 @@ const App = () => {
     useState<string>('Disconnected')
   const [socketId, setSocketId] = useState<string | null>(null)
   const [output, setOutput] = useState<OutputLog[]>([])
+  const [autoScroll, setAutoScroll] = useState(false)
 
   const outputListRef = useRef<HTMLDivElement>(null)
 
@@ -47,14 +48,20 @@ const App = () => {
       setConnectionStatus('Error')
       setSocketId(null)
       // setOutput((prev) => [...prev, `${error}`])
-      setOutput((prev) => [...prev, { message: error.message, timestamp: Date.now(), type: 'error' }])
+      setOutput((prev) => [
+        ...prev,
+        { message: error.message, timestamp: Date.now(), type: 'error' },
+      ])
     })
 
     newSocket.on('error', (error) => {
       setConnectionStatus('Error')
       setSocketId(null)
       // setOutput((prev) => [...prev, `Error: ${error}`])
-      setOutput((prev) => [...prev, { message: error.message, timestamp: Date.now(), type: 'error' }])
+      setOutput((prev) => [
+        ...prev,
+        { message: error.message, timestamp: Date.now(), type: 'error' },
+      ])
     })
 
     newSocket.on('connect', () => {
@@ -70,7 +77,10 @@ const App = () => {
         args
       )}`
       // setOutput((prev) => [...prev, newOutput])
-      setOutput((prev) => [...prev, { message: newOutput, timestamp: Date.now(), type: 'event-emit' }])
+      setOutput((prev) => [
+        ...prev,
+        { message: newOutput, timestamp: Date.now(), type: 'event-emit' },
+      ])
     })
     setSocket(newSocket)
   }
@@ -87,12 +97,26 @@ const App = () => {
   const emitEvent = () => {
     if (!socket) {
       // setOutput((prev) => [...prev, 'Error: Not connected to a server.'])
-      setOutput((prev) => [...prev, { message: 'Error: Not connected to a server.', timestamp: Date.now(), type: 'error' }])
+      setOutput((prev) => [
+        ...prev,
+        {
+          message: 'Error: Not connected to a server.',
+          timestamp: Date.now(),
+          type: 'error',
+        },
+      ])
       return
     }
     if (eventName.trim() === '') {
       // setOutput((prev) => [...prev, 'Error: Event name cannot be empty.'])
-      setOutput((prev) => [...prev, { message: 'Error: Event name cannot be empty.', timestamp: Date.now(), type: 'error' }])
+      setOutput((prev) => [
+        ...prev,
+        {
+          message: 'Error: Event name cannot be empty.',
+          timestamp: Date.now(),
+          type: 'error',
+        },
+      ])
       return
     }
     socket.emit(eventName, ...parameters)
@@ -100,7 +124,10 @@ const App = () => {
       parameters
     )}`
     // setOutput((prev) => [...prev, log])
-    setOutput((prev) => [...prev, { message: log, timestamp: Date.now(), type: 'message' }])
+    setOutput((prev) => [
+      ...prev,
+      { message: log, timestamp: Date.now(), type: 'message' },
+    ])
   }
 
   const addParameter = () => setParameters([...parameters, ''])
@@ -133,9 +160,14 @@ const App = () => {
     setOutput([])
   }
 
+  const toggleAutoScroll = () => {
+    console.log('first')
+    setAutoScroll((prev) => !prev)
+  }
+
   // Bring last output log into view
   useEffect(() => {
-    if (outputListRef.current) {
+    if (outputListRef.current && autoScroll) {
       // outputListRef.current.scrollTop = outputListRef.current.scrollHeight;
       outputListRef.current.scrollTo({
         top: outputListRef.current.scrollHeight,
@@ -168,7 +200,9 @@ const App = () => {
             )}
           </div>
         </div>
-        <span className='uppercase font-light text-[9px] px-[4px] py-[2px] border rounded border-black'>Beta</span>
+        <span className="uppercase font-light text-[9px] px-[4px] py-[2px] border rounded border-black">
+          Beta
+        </span>
         <div>
           <h2 className="text-lg">Server URL</h2>
           <div className="flex justify-between gap-2">
@@ -198,7 +232,7 @@ const App = () => {
         </div>
 
         <div>
-        <h2 className="text-lg">Emit Event</h2>
+          <h2 className="text-lg">Emit Event</h2>
           <div className="flex justify-between gap-2">
             <input
               placeholder="event-name"
@@ -208,8 +242,11 @@ const App = () => {
                 setEventName(e.target.value)
               }
             />
-            <button className="app-button bg-sky-600 text-white min-w-16" onClick={emitEvent}
-            disabled={!eventName}>
+            <button
+              className="app-button bg-sky-600 text-white min-w-16"
+              onClick={emitEvent}
+              disabled={!eventName}
+            >
               Emit
             </button>
           </div>
@@ -224,18 +261,27 @@ const App = () => {
           <div className="my-4">
             {parameters.map((param, index) => (
               <div key={index} className="flex gap-2 justify-between mb-3">
-              <input placeholder={`Parameter ${index + 1}`} value={
+                <input
+                  placeholder={`Parameter ${index + 1}`}
+                  value={
                     typeof param === 'string' ? param : JSON.stringify(param)
                   }
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     updateParameter(index, e.target.value)
-                  } />
-              <button onClick={() => deleteParameter(index)} className="app-button text-slate-600 border border-slate-600">
-                Remove
-              </button>
-            </div>
+                  }
+                />
+                <button
+                  onClick={() => deleteParameter(index)}
+                  className="app-button text-slate-600 border border-slate-600"
+                >
+                  Remove
+                </button>
+              </div>
             ))}
-            <button onClick={addParameter} className="app-button border border-slate-700 text-slate-700 hover:bg-slate-100">
+            <button
+              onClick={addParameter}
+              className="app-button border border-slate-700 text-slate-700 hover:bg-slate-100"
+            >
               Add Parameter +
             </button>
           </div>
@@ -257,17 +303,37 @@ const App = () => {
       <div className="rounded-xl flex-1 flex flex-col">
         <div className="flex justify-between bg-slate-700 text-white p-4">
           <h2>Logs</h2>
-          <button className="app-button bg-red-600" onClick={clearLogs}>Clear</button>
+          <div>
+            <button
+              onClick={toggleAutoScroll}
+              className="app-button mr-2 bg-slate-900"
+            >
+              AutoScroll:{' '}
+              <span
+                className={`${autoScroll ? 'text-green-400' : 'text-red-400'}`}
+              >
+                {autoScroll ? 'ON' : 'OFF'}
+              </span>
+            </button>
+            <button className="app-button bg-red-600" onClick={clearLogs}>
+              Clear
+            </button>
+          </div>
         </div>
-        <div ref={outputListRef} className="overflow-y-scroll flex-1 p-4 bg-slate-900 text-slate-200 font-mono text-sm [&>*]:border-b-[0.5px] [&>*]:border-slate-500 [&>*]:pb-2 [&>*]:mb-2">
-        {output.length === 0 ? (
+        <div
+          ref={outputListRef}
+          className="overflow-y-scroll flex-1 p-4 bg-slate-900 text-slate-200 font-mono text-sm [&>*]:border-b-[0.5px] [&>*]:border-slate-500 [&>*]:pb-2 [&>*]:mb-2"
+        >
+          {output.length === 0 ? (
             <p>No logs yet.</p>
           ) : (
             output.map((log, index) => (
               <div key={index}>
-                <p className='opacity-70 text-xs'>{dayjs(log.timestamp).format('YYYY-MM-DD HH:mm:ss')}</p>
+                <p className="opacity-70 text-xs">
+                  {dayjs(log.timestamp).format('YYYY-MM-DD HH:mm:ss')}
+                </p>
                 <p className={logTypeClasses[log.type] || 'text-white'}>
-                {log.message || 'No message'}
+                  {log.message || 'No message'}
                 </p>
               </div>
             ))
