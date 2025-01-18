@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import { useState, useEffect, ChangeEvent, useRef } from 'react'
 import { io, Socket } from 'socket.io-client'
+import logo from './assets/st-logo.svg'
 
 type Parameter = string | number | boolean | Record<string, any>
 
@@ -179,7 +180,7 @@ const App = () => {
   return (
     <div className="h-screen flex flex-col md:flex-row gap-3 p-3">
       <div className="space-y-6 p-5 overflow-y-scroll flex-1">
-          <img className='w-10 pt-6' src='/st-logo.svg' alt='ST Logo'/>
+          <img className='w-10 pt-6' src={logo} alt='ST Logo'/>
           <div className="space-y-6">
         <div className="flex justify-between">
           <h1 className="text-4xl font-semibold">Socket.IO Tester</h1>
