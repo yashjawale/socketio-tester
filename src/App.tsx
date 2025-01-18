@@ -28,7 +28,7 @@ const App = () => {
     useState<string>('Disconnected')
   const [socketId, setSocketId] = useState<string | null>(null)
   const [output, setOutput] = useState<OutputLog[]>([])
-  const [autoScroll, setAutoScroll] = useState(false)
+  const [autoScroll, setAutoScroll] = useState(true)
 
   const outputListRef = useRef<HTMLDivElement>(null)
 
@@ -302,7 +302,7 @@ const App = () => {
           </a>
         </div>
       </div>
-      <div className="rounded-xl flex-1 flex flex-col">
+      <div className="rounded-xl overflow-hidden flex-1 flex flex-col">
         <div className="flex justify-between items-center bg-slate-700 text-white p-4">
           <h2>Logs</h2>
           <div>
