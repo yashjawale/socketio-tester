@@ -179,7 +179,9 @@ const App = () => {
   return (
     <div className="h-screen flex flex-col md:flex-row gap-3 p-3">
       <div className="space-y-6 p-5 overflow-y-scroll flex-1">
-        <div className="flex justify-between pt-6">
+          <img className='w-10 pt-6' src='/st-logo.svg' alt='ST Logo'/>
+          <div className="space-y-6">
+        <div className="flex justify-between">
           <h1 className="text-4xl font-semibold">Socket.IO Tester</h1>
           <div>
             <p
@@ -286,7 +288,7 @@ const App = () => {
             </button>
           </div>
         </div>
-
+        </div>
         <div className="opacity-70 pt-6 text-xs">
           <hr />
           <p className="pt-4">&copy; {new Date().getFullYear()} Yash Jawale</p>
@@ -301,12 +303,12 @@ const App = () => {
         </div>
       </div>
       <div className="rounded-xl flex-1 flex flex-col">
-        <div className="flex justify-between bg-slate-700 text-white p-4">
+        <div className="flex justify-between items-center bg-slate-700 text-white p-4">
           <h2>Logs</h2>
           <div>
             <button
               onClick={toggleAutoScroll}
-              className="app-button mr-2 bg-slate-900"
+              className="app-button mr-2 bg-slate-900 font-mono"
             >
               AutoScroll:{' '}
               <span
