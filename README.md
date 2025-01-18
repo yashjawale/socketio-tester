@@ -1,50 +1,27 @@
-# React + TypeScript + Vite
+<img src="./public/st-favicon.svg" style="width: 50px;" />
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# SocketIO Tester
 
-Currently, two official plugins are available:
+![Visit Website](https://img.shields.io/badge/Use%20Tool-blue)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Expanding the ESLint configuration
+A simple web app for testing SocketIO connections
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+![Screenshot](./docs/screenshot.png)
 
-- Configure the top-level `parserOptions` property like this:
+## Bug reports & Feature requests
+Submit an issue describing the problem you're facing or the features you'd like to be implemented.
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## Contribute
+- Fork the repository
+- Make changes & submit a Pull Request along with accompanied issue
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## Tech Stack
+- ReactJS
+- TailwindCSS
+- SocketIO
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+---
+
+<a href="https://yashjawale.github.io/" target="_blank"><img style="height: 22px;" src="https://raw.githubusercontent.com/yashjawale/.github/main/docs/logo.svg" alt="Yash Jawale"/></a>
