@@ -95,6 +95,17 @@ const App = () => {
     }
   }
 
+  const callback = (...args: any[]) => {
+    const log = `Received callback for event "${eventName}" with args: ${JSON.stringify(
+      args
+    )}`
+    // setOutput((prev) => [...prev, log])
+    setOutput((prev) => [
+      ...prev,
+      { message: log, timestamp: Date.now(), type: 'callback' },
+    ])
+  }
+
   const emitEvent = () => {
     if (!socket) {
       // setOutput((prev) => [...prev, 'Error: Not connected to a server.'])
@@ -120,7 +131,8 @@ const App = () => {
       ])
       return
     }
-    socket.emit(eventName, ...parameters)
+
+    socket.emit(eventName, ...parameters, callback)
     const log = `Emitted event "${eventName}" with parameters: ${JSON.stringify(
       parameters
     )}`
